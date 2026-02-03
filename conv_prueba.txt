@@ -1,3 +1,25 @@
+Jordy:"bien ahora vamos con las pruebas, te enviare el archivo pom.xml para que comprendas el entorno de pruebas.
+Ademas la pequeña base del codigo:"package es.upm.grise.profundizacion.file;
+
+import org.junit.jupiter.api.Test;
+
+public class FileTest {
+    
+    @Test
+    public void smokeTest() {}
+
+}
+""
+
+LLM:"Entendido. He analizado el archivo `pom.xml` y veo que dispones de **JUnit 5** (`junit-jupiter-api` v5.13.4) y **Mockito** (`mockito-core` v5.19.0). Esto es ideal, ya que nos permitirá probar la clase `File` de forma aislada, simulando ("mockeando") el comportamiento de la clase `FileUtils`.
+
+Aquí tienes el código completo para `FileTest.java`. He cubierto todos los casos especificados en los requisitos.
+
+### Archivo: `FileTest.java`
+
+Copia y reemplaza el contenido en `src/test/java/es/upm/grise/profundizacion/file/FileTest.java`:
+
+```java
 package es.upm.grise.profundizacion.file;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -111,3 +133,58 @@ public class FileTest {
         assertEquals((byte)0x34, passedBytes[0], "Debería haber tomado solo el byte menos significativo");
     }
 }
+
+```
+
+### Explicación de los Tests Implementados:
+
+1. **`testAddProperty_NullContent...`**: Verifica que se lance la excepción correcta si le pasamos `null`.
+2. **`testAddProperty_ImageFileType...`**: Verifica que si configuramos el tipo como `IMAGE`, intentar añadir texto falle.
+3. **`testAddProperty_ValidContent...`**: Verifica que el contenido se guarde realmente en la lista interna.
+4. **`testGetCRC32_EmptyContent...`**: Verifica la condición de borde donde el archivo está vacío (debe retornar 0).
+5. **`testGetCRC32_NonEmptyContent...`**: Utiliza **Mockito** para asegurar que tu clase `File` está delegando correctamente el cálculo a `FileUtils`.
+6. **`testGetCRC32_ContentConversion...`**: Esta es crítica según la especificación "formato PNG de 8 bits". Verifica que si metemos un carácter Unicode, tu código lo recorte correctamente a un byte antes de enviarlo a calcular.
+
+### Siguientes pasos:
+
+El flujo indica que el siguiente paso (Paso 8) es guardar la conversación de las pruebas.
+
+1. Ejecuta las pruebas en tu entorno (con `mvn test` o desde tu IDE) para asegurar que todo está en verde.
+2. Si todo funciona, deberías crear el archivo `conv_prueba.<ext>` y hacer el commit correspondiente.
+
+¿Deseas que te ayude con algo más antes de que cierres esta etapa?"
+
+Jordy:"Tengo error en la siguiente linea:"@ExtendWith(MockitoExtension.class)
+
+"
+este es el error :" MockitoExtension cannot be resolved to a type, Class<MockitoExtension> cannot be resolved to a type"
+
+e igualmente aqui:"import org.mockito.junit.jupiter.MockitoExtension;
+" Cuento con este error:"The import org.mockito.junit.jupiter cannot be resolved""
+
+
+LLM:"El error ocurre porque en tu archivo `pom.xml` incluiste `mockito-core`, pero falta la librería que conecta Mockito con JUnit 5 (que es donde vive `MockitoExtension`).
+
+`mockito-core` contiene la lógica de los mocks, pero `mockito-junit-jupiter` contiene la integración necesaria para usar `@ExtendWith`.
+
+### Solución
+
+Debes añadir la siguiente dependencia en tu archivo `pom.xml`, justo debajo de donde tienes `mockito-core`:
+
+```xml
+    <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-junit-jupiter</artifactId>
+        <version>5.19.0</version>
+        <scope>test</scope>
+    </dependency>
+
+```
+
+**Pasos a seguir:**
+
+1. Abre tu archivo `pom.xml`.
+2. Copia y pega la dependencia de arriba dentro de la etiqueta `<dependencies>`.
+3. **Importante:** Guarda el archivo y **actualiza el proyecto Maven** (Click derecho en el proyecto -> Maven -> Update Project, o recarga los cambios en tu IDE) para que descargue la librería.
+
+Una vez hecho esto, los errores de importación en `FileTest.java` desaparecerán y podrás ejecutar las pruebas."
